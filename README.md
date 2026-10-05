@@ -76,8 +76,7 @@ node --test tests/runway.test.js
 All asset paths are relative, so it works under `https://<user>.github.io/hardware-runway-planner/`. The empty `.nojekyll` file
 tells Pages to serve files as-is.
 
-Before publishing: edit the footer in `index.html` (`[YOUR NAME]` and the portfolio URL). For link previews, change the
-`og:image` value to an absolute URL such as `https://<user>.github.io/hardware-runway-planner/og-image.png`.
+For link previews, change the `og:image` value to an absolute URL such as `https://<user>.github.io/hardware-runway-planner/og-image.png`.
 
 ## Layout
 
