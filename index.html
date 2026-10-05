@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hardware Runway Planner</title>
+  <meta name="description" content="Plan what a pre-seed round actually buys a hardware startup: milestones, month-by-month cash, runway and funding gap.">
+  <meta name="color-scheme" content="light dark">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hardware Runway Planner">
+  <meta property="og:description" content="What does this round actually buy, and when do we run out of money? A milestone-based runway tool for hardware startups.">
+  <meta property="og:image" content="og-image.png">
+  <meta property="og:image:alt" content="Hardware Runway Planner: stage timeline and cash balance chart">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Hardware Runway Planner">
+  <meta name="twitter:description" content="Milestones, month-by-month cash, runway and funding gap for hardware startups.">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234338ca'/%3E%3Cpath d='M6 22l6-7 5 4 9-11' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#results">Skip to results</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">
+        <h1>Hardware Runway Planner</h1>
+        <p class="tagline">What does this round actually buy, and when do we run out of money?</p>
+      </div>
+      <div class="toolbar no-print" role="group" aria-label="Templates and export">
+        <div class="field inline">
+          <label for="template">Template</label>
+          <select id="template">
+            <option value="">Load a template…</option>
+          </select>
+        </div>
+        <button type="button" class="btn" id="btn-csv">Download CSV</button>
+        <button type="button" class="btn" id="btn-share">Copy share link</button>
+        <button type="button" class="btn" id="btn-print">Print / Save as PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap layout">
+    <div class="inputs no-print-break">
+      <section class="panel" aria-labelledby="h-setup">
+        <h2 id="h-setup">Setup</h2>
+        <div class="grid-2">
+          <div class="field span-2">
+            <label for="company">Company name</label>
+            <input id="company" data-field="company" type="text" maxlength="60" autocomplete="off">
+            <p class="err" id="err-company" role="alert"></p>
+          </div>
+          <div class="field">
+            <label for="startingCash">Starting cash</label>
+            <div class="money"><span aria-hidden="true">$</span>
+              <input id="startingCash" data-field="startingCash" type="number" inputmode="numeric" min="0" max="1000000000" step="10000"></div>
+            <p class="err" id="err-startingCash"></p>
+          </div>
+          <div class="field">
+            <label for="startMonth">Start month</label>
+            <input id="startMonth" data-field="startMonth" type="month" placeholder="YYYY-MM" pattern="\d{4}-\d{2}">
+            <p class="err" id="err-startMonth"></p>
+          </div>
+          <div class="field span-2">
+            <label for="baseBurn">Base monthly burn (team and overhead)</label>
+            <div class="money"><span aria-hidden="true">$</span>
+              <input id="baseBurn" data-field="baseBurn" type="number" inputmode="numeric" min="0" max="1000000000" step="1000"></div>
+            <p class="err" id="err-baseBurn"></p>
+          </div>
+          <fieldset class="span-2 sub">
+            <legend>Planned raise (optional)</legend>
+            <div class="grid-2">
+              <div class="field">
+                <label for="raiseAmount">Raise amount</label>
+                <div class="money"><span aria-hidden="true">$</span>
+                  <input id="raiseAmount" data-field="raiseAmount" type="number" inputmode="numeric" min="0" max="1000000000" step="50000"></div>
+                <p class="err" id="err-raiseAmount"></p>
+              </div>
+              <div class="field">
+                <label for="raiseMonth">Arrives in plan month</label>
+                <input id="raiseMonth" data-field="raiseMonth" type="number" inputmode="numeric" min="1" max="120" step="1" aria-describedby="raiseHint">
+                <p class="hint" id="raiseHint"></p>
+                <p class="err" id="err-raiseMonth"></p>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-stages">
+        <div class="panel-head">
+          <h2 id="h-stages">Milestones</h2>
+          <p class="hint" id="stageTotals"></p>
+        </div>
+        <p class="hint">Stages run back to back. Reorder with the arrow buttons, by dragging the grip, or by focusing the grip and pressing ↑ / ↓.</p>
+        <p class="err" id="err-stages" role="alert"></p>
+        <ol class="stages" id="stages"></ol>
+        <button type="button" class="btn primary" id="btn-add">+ Add stage</button>
+      </section>
+    </div>
+
+    <div class="outputs" id="results" tabindex="-1">
+      <section class="print-only print-meta" aria-label="Assumptions">
+        <h2 id="printTitle"></h2>
+        <p id="printMeta"></p>
+      </section>
+
+      <section class="panel answer" aria-labelledby="h-answer">
+        <h2 id="h-answer" class="sr-only">Summary</h2>
+        <p class="sentence" id="sentence" aria-live="polite"></p>
+        <p class="warn" id="truncNote" hidden>This plan is longer than the 120-month simulation cap, so results cover only the first 120 months.</p>
+        <div class="cards" id="cards"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-gantt">
+        <h2 id="h-gantt">Timeline</h2>
+        <div class="gantt-scroll" id="gantt" role="region" aria-label="Stage timeline (scrolls horizontally)" tabindex="0"></div>
+        <ul class="legend" aria-label="Timeline legend">
+          <li><span class="sw sw-funded"></span>Funded</li>
+          <li><span class="sw sw-unfunded"></span>Not funded</li>
+          <li><span class="sw sw-cashout"></span>Cash out</li>
+          <li><span class="sw sw-raise"></span>Planned raise</li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="h-chart">
+        <h2 id="h-chart">Cash balance</h2>
+        <div class="chart-box">
+          <canvas id="chart" role="img" aria-label="Cash balance by month"></canvas>
+          <p class="chart-fallback" id="chartFallback" hidden>The chart library could not load. The month-by-month table below has the same data.</p>
+        </div>
+        <details class="data-table" id="tableDetails">
+          <summary>View chart data as a table</summary>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Month-by-month cash table (scrolls horizontally)">
+            <table id="cashTable"></table>
+          </div>
+        </details>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="sr-only" id="announce" role="status" aria-live="polite"></div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Built by <a href="https://YOUR-PORTFOLIO-URL.example" rel="noopener">[YOUR NAME]</a></p>
+      <p class="fine">This is a planning aid, not financial advice. Figures are illustrative and come only from the assumptions you enter.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+          integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="lib/runway.js"></script>
+  <script src="data/templates.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
