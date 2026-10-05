@@ -1,7 +1,7 @@
 # Hardware Runway Planner
 
 A single-page tool that answers one question for hardware startups and the investors who back them:
-**what does this round actually buy, and when do we run out of money?**
+**what can we buy and what is our runway?**
 
 Enter starting cash, monthly burn and a list of milestones (lab prototype → production run). The tool
 simulates cash month by month and shows runway, the milestone you reach before cash-out, the total cash
